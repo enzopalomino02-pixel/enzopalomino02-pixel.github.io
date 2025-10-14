@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evento | Fotos Nelson</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" role="banner">
+      <h1 class="brand"><a class="brand-link" href="index.html#portfolio">Fotos Nelson</a></h1>
+      <nav class="tabs" aria-label="Secciones">
+        <a class="tab" href="index.html#eventos" aria-selected="true">Volver a Eventos</a>
+        <a class="tab" href="index.html#portfolio" aria-selected="false">Portfolio</a>
+        <a class="tab" href="index.html#contacto" aria-selected="false">Contacto</a>
+      </nav>
+    </header>
+
+    <main class="content" role="main">
+      <section class="section" aria-labelledby="evento-title">
+        <h2 id="evento-title">Galería del Evento</h2>
+        <p id="evento-meta" class="hint"></p>
+        <button id="download-all" class="btn primary" type="button">Descargar todas</button>
+        <div id="gallery" class="gallery" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>© <span id="year"></span> Fotos Nelson</small>
+    </footer>
+
+    <!-- JSZip para crear ZIP en el navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+      const params = new URLSearchParams(location.search);
+      const slugRaw = params.get('slug') || '';
+      const slug = decodeURIComponent(slugRaw).trim();
+      const hasAccess = (
+        localStorage.getItem(`eventAccess_${slug}`) === 'true' ||
+        sessionStorage.getItem(`eventAccess_${slug}`) === 'true' ||
+        params.get('access') === '1'
+      );
+      const gallery = document.getElementById('gallery');
+      const meta = document.getElementById('evento-meta');
+      const downloadBtn = document.getElementById('download-all');
+
+      // Raíces candidatas para ubicar las carpetas de eventos dentro de assets
+      const EVENT_ROOTS = [
+        'assets/eventos',
+        'assets/Eventos',
+        'assets/eventFolder',
+        'assets/events',
+        'assets/Events',
+        'assets',
+      ];
+      let EVENT_BASE = 'assets';
+      async function detectEventBaseForSlug(dirSlug) {
+        for (const base of EVENT_ROOTS) {
+          try {
+            const res = await fetch(`${base}/${encodeURIComponent(dirSlug)}/`, { cache: 'no-store' });
+            if (res.ok) { EVENT_BASE = base; return base; }
+          } catch {}
+        }
+        return EVENT_BASE;
+      }
+
+      if (!slug) {
+        meta.textContent = 'No se especificó el evento.';
+      } else if (!hasAccess) {
+        meta.textContent = 'Acceso no autorizado. Volvé a Eventos e ingresá el PIN.';
+        downloadBtn.disabled = true;
+        downloadBtn.classList.add('disabled');
+      }
+
+      let currentEvent = null;
+      let currentNames = [];
+
+      // Visualizador (lightbox) para navegar fotos
+      const viewerBackdrop = document.createElement('div');
+      viewerBackdrop.id = 'viewer-backdrop';
+      viewerBackdrop.className = 'lightbox-backdrop';
+      viewerBackdrop.hidden = true;
+      viewerBackdrop.setAttribute('aria-hidden', 'true');
+      const viewerInner = document.createElement('div');
+      viewerInner.className = 'lightbox-inner';
+      const viewerImg = document.createElement('img');
+      viewerImg.id = 'viewer-img';
+      viewerImg.className = 'lightbox-img';
+      viewerImg.alt = '';
+      const viewerClose = document.createElement('button');
+      viewerClose.className = 'lightbox-close';
+      viewerClose.type = 'button';
+      viewerClose.setAttribute('aria-label', 'Cerrar');
+      viewerClose.textContent = '×';
+      const viewerPrev = document.createElement('button');
+      viewerPrev.className = 'lightbox-prev';
+      viewerPrev.type = 'button';
+      viewerPrev.setAttribute('aria-label', 'Anterior');
+      viewerPrev.textContent = '‹';
+      const viewerNext = document.createElement('button');
+      viewerNext.className = 'lightbox-next';
+      viewerNext.type = 'button';
+      viewerNext.setAttribute('aria-label', 'Siguiente');
+      viewerNext.textContent = '›';
+      const viewerCaption = document.createElement('div');
+      viewerCaption.className = 'lightbox-caption';
+      viewerInner.appendChild(viewerImg);
+      viewerInner.appendChild(viewerClose);
+      viewerInner.appendChild(viewerPrev);
+      viewerInner.appendChild(viewerNext);
+      viewerInner.appendChild(viewerCaption);
+      viewerBackdrop.appendChild(viewerInner);
+      document.body.appendChild(viewerBackdrop);
+      let viewerIndex = 0;
+
+      function updateViewer() {
+        if (!currentNames.length) return;
+        const name = currentNames[viewerIndex];
+        viewerImg.src = `${EVENT_BASE}/${slug}/${name}`;
+        viewerImg.alt = currentEvent ? currentEvent.title : '';
+        viewerCaption.textContent = `${viewerIndex + 1} / ${currentNames.length}`;
+        viewerImg.onerror = () => {
+          viewerImg.src = `https://picsum.photos/seed/${encodeURIComponent(slug + '-' + name)}/1200/800`;
+        };
+      }
+      function openViewer(idx) {
+        viewerIndex = ((idx % currentNames.length) + currentNames.length) % currentNames.length;
+        viewerBackdrop.hidden = false;
+        viewerBackdrop.style.display = 'flex';
+        viewerBackdrop.setAttribute('aria-hidden', 'false');
+        updateViewer();
+      }
+      function closeViewer() {
+        viewerBackdrop.hidden = true;
+        viewerBackdrop.style.display = 'none';
+        viewerBackdrop.setAttribute('aria-hidden', 'true');
+      }
+      function nextViewer() { viewerIndex = (viewerIndex + 1) % currentNames.length; updateViewer(); }
+      function prevViewer() { viewerIndex = (viewerIndex - 1 + currentNames.length) % currentNames.length; updateViewer(); }
+      viewerClose.addEventListener('click', closeViewer);
+      viewerNext.addEventListener('click', nextViewer);
+      viewerPrev.addEventListener('click', prevViewer);
+      viewerBackdrop.addEventListener('click', (e) => { if (e.target === viewerBackdrop) closeViewer(); });
+      window.addEventListener('keydown', (e) => {
+        if (viewerBackdrop.hidden) return;
+        if (e.key === 'Escape') closeViewer();
+        if (e.key === 'ArrowRight') nextViewer();
+        if (e.key === 'ArrowLeft') prevViewer();
+      });
+      // Gestos táctiles simples
+      let touchStartX = null;
+      viewerBackdrop.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].clientX; }, { passive: true });
+      viewerBackdrop.addEventListener('touchend', (e) => {
+        if (touchStartX == null) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) > 40) { if (dx < 0) nextViewer(); else prevViewer(); }
+        touchStartX = null;
+      });
+
+      async function listAssets(dirSlug) {
+        // Intenta obtener el listado HTML del directorio y extraer los nombres de archivo
+        const dirUrl = `${EVENT_BASE}/${encodeURIComponent(dirSlug)}/`;
+        const res = await fetch(dirUrl, { cache: 'no-store' });
+        if (!res.ok) return [];
+        const html = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const anchors = Array.from(doc.querySelectorAll('a[href]'));
+        const exts = ['.jpg','.jpeg','.png','.webp','.gif','.JPG','.JPEG','.PNG','.WEBP','.GIF'];
+        const names = anchors
+          .map(a => a.getAttribute('href') || '')
+          .filter(h => h && !h.startsWith('?') && !h.includes('../'))
+          .map(h => decodeURIComponent(h).split('/').pop())
+          .filter(name => exts.some(ext => name.endsWith(ext)));
+        names.sort((a,b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+        return names;
+      }
+      async function loadGallery() {
+        try {
+          await detectEventBaseForSlug(slug);
+          const res = await fetch(`events.json?v=${Date.now()}`, { cache: 'no-store' });
+          const data = await res.json();
+          let ev = (data.events || []).find(e => (e.slug || '') === slug);
+          if (!ev) {
+            // Fallback: si no está en el JSON pero existe la carpeta con imágenes, armamos evento básico
+            const names = await listAssets(slug);
+            if (names.length) {
+              const niceTitle = slug;
+              ev = { slug, title: niceTitle, date: new Date().toISOString().slice(0,10), images: names };
+            } else {
+              meta.textContent = 'Evento no encontrado.';
+              return;
+            }
+          }
+          currentEvent = ev;
+          const displayTitle = ev.title || ev.slug;
+          const dateText = ev.date ? new Date(ev.date).toLocaleDateString('es-AR') : '';
+          meta.textContent = dateText ? `${displayTitle} · ${dateText}` : displayTitle;
+          gallery.innerHTML = '';
+
+          // Usa lista del JSON si existe; si no, escanea la carpeta de assets
+          const names = (Array.isArray(ev.images) && ev.images.length > 0)
+            ? ev.images
+            : await listAssets(slug);
+          currentNames = names;
+
+          names.forEach((name, i) => {
+            const img = document.createElement('img');
+            img.alt = displayTitle;
+            img.loading = 'lazy';
+            img.src = `${EVENT_BASE}/${slug}/${name}`;
+            img.onerror = () => {
+              // Fallback agradable si la imagen local aún no existe
+              img.src = `https://picsum.photos/seed/${encodeURIComponent(slug + '-' + name)}/800/600`;
+            };
+            img.addEventListener('click', () => openViewer(i));
+            gallery.appendChild(img);
+          });
+        } catch (e) {
+          meta.textContent = 'No se pudo cargar la galería.';
+          console.error(e);
+        }
+      }
+
+      if (slug && hasAccess) loadGallery();
+
+      // Descarga en lote (solo incluye imágenes locales en assets/)
+      document.getElementById('download-all').addEventListener('click', async () => {
+        if (!currentEvent) return;
+        const zip = new JSZip();
+        const folder = zip.folder(currentEvent.slug);
+        const names = currentNames.slice();
+
+        // Feedback simple
+        const btn = document.getElementById('download-all');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Preparando ZIP...';
+
+        try {
+          for (const name of names) {
+            const url = `${EVENT_BASE}/${slug}/${name}`;
+            const res = await fetch(url);
+            if (!res.ok) {
+              // Si falta alguna imagen, la omitimos del ZIP
+              continue;
+            }
+            const blob = await res.blob();
+            const arrayBuf = await blob.arrayBuffer();
+            folder.file(name, arrayBuf);
+          }
+
+          const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+          const link = document.createElement('a');
+          const zipName = `${currentEvent.slug}.zip`;
+          link.href = URL.createObjectURL(zipBlob);
+          link.download = zipName;
+          document.body.appendChild(link);
+          link.click();
+          URL.revokeObjectURL(link.href);
+          link.remove();
+        } catch (err) {
+          console.error('Error generando ZIP', err);
+          alert('No se pudo generar el ZIP. Ver consola para detalles.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      });
+    </script>
+  </body>
+</html>

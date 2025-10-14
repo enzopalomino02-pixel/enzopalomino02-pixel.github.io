@@ -1,0 +1,87 @@
+Manual de Eventos y Portfolio – Fotos Nelson
+
+Resumen
+- Este manual explica cómo agregar nuevos eventos para que aparezcan automáticamente en la sección "Eventos", cómo asignar PIN por carpeta, y cómo modificar las fotos del Portfolio y las imágenes de los servicios.
+
+Requisitos
+- Ejecutá un servidor local en la carpeta del proyecto:
+  - Node: npx http-server -p 8081
+  - Python: python -m http.server 8081
+- Abrí http://127.0.0.1:8081/ y navegá a #eventos o #portfolio.
+
+Ubicación de Eventos
+- Base recomendada: assets/Eventos/ (el sitio detecta automáticamente esta carpeta). También intenta otras rutas (assets/eventos, assets/events, etc.), pero se sugiere usar assets/Eventos.
+
+Agregar un Evento Nuevo
+1) Creá una carpeta dentro de assets/Eventos/ con el nombre que querés mostrar (con acentos y espacios permitidos).
+   - Ejemplo: assets/Eventos/Mi Fiesta Increíble/
+2) Copiá las fotos del evento dentro de esa carpeta.
+   - Formatos válidos: .jpg, .jpeg, .png, .webp, .gif (en mayúsculas también).
+3) Al tener al menos una imagen válida, el evento aparece automáticamente en #eventos.
+4) Portada (opcional): agregá una imagen con nombre que contenga "cover", "portada", "front" o "capa" (p. ej. portada.jpg). Si no hay, se usa la primera por orden alfabético.
+5) Fecha y título personalizados (opcional): editá events.json y agregá una entrada.
+   - El slug debe coincidir EXACTO con el nombre de la carpeta dentro de assets/Eventos/.
+   - Ejemplo:
+     {
+       "slug": "Mi Fiesta Increíble",
+       "title": "Mi Fiesta Increíble",
+       "date": "2025-10-01",
+       "images": []
+     }
+6) PIN por carpeta (opcional): editá script.js y agregá el nombre exacto de la carpeta al mapa pinMap.
+   - El key debe coincidir EXACTO con la carpeta (incluyendo espacios y mayúsculas).
+   - Ejemplo:
+     const pinMap = {
+       "Bautismo de Helena": "0080",
+       "3 Años de Enzo": "1234",
+       "Mi Fiesta Increíble": "4321"
+     };
+7) Visualización: en la sección #eventos, cada carpeta aparece como tarjeta con título (el nombre de la carpeta), fecha (si está en events.json) y portada.
+8) Ingreso y descarga: al abrir una galería (tras introducir el PIN si corresponde), se muestra el visor y el botón "Descargar todas" que genera un ZIP con las imágenes.
+
+Modificar Fotos del Portfolio
+- El carrusel de Portfolio carga automáticamente todas las imágenes de assets/portfolio/.
+- Para cambiar qué fotos muestra:
+  - Reemplazá o agregá imágenes dentro de assets/portfolio/.
+  - Las imágenes se ordenan por nombre (alfabético/numérico). Para controlar el orden, usá prefijos (01.jpg, 02.jpg...).
+- Si el folder está vacío, se muestran imágenes de muestra; al colocar fotos locales, se usan automáticamente.
+- Recomendaciones de calidad:
+  - Resolución sugerida: ≥ 1200x800.
+  - Evitá archivos muy grandes (> 8–10 MB por foto) para mejorar el rendimiento.
+
+Modificar Imágenes de la Sección Servicios
+- Las imágenes de los servicios se definen en index.html, dentro de la sección <section class="services-section">.
+- Actualizá el atributo src de cada <img>:
+  1) Cabina de Fotos (id="svc-cabina-title")
+     <img src="assets/portfolio/ENZ_0473.JPG" alt="Cabina de Fotos" />
+  2) Espejo Mágico (id="svc-espejo-title")
+     <img src="assets/portfolio/ENZ_0583.JPG" alt="Espejo Mágico" />
+  3) Plataforma 360° (id="svc-360-title")
+     <img src="assets/portfolio/ENZ_0541.JPG" alt="Plataforma 360°" />
+- Podés usar imágenes locales (assets/portfolio/... o assets/Eventos/Nombre/...) o una URL externa (https://.../imagen.jpg).
+- Para alternar el lado de la imagen, agregá o quitá la clase row--reverse en <article class="service-row ...">.
+- Las imágenes tienen object-fit: cover; se ven grandes en desktop y apiladas en móvil.
+
+Buenas Prácticas y Consejos
+- Nombres de carpeta: usá el nombre que querés mostrar (con acentos y espacios). Ese nombre se usa como título.
+- Orden de imágenes del evento: por nombre de archivo; si querés controlar el orden, numerá los archivos.
+- Portadas: preferí nombrar archivos con "cover", "portada", "front" o "capa" para asegurar que se elijan como portada.
+- Si no ves cambios:
+  - Hacé hard refresh del navegador (Ctrl+F5).
+  - Asegurate de que el servidor local esté corriendo.
+
+Problemas Comunes
+- "No aparece el evento": verificá que la carpeta esté en assets/Eventos/ y que tenga imágenes válidas.
+- "No pide PIN": agregá el nombre exacto de la carpeta al pinMap en script.js con su PIN.
+- "No se ve la portada": colocá un archivo con nombre "cover"/"portada"/"front"/"capa" o asegurate que haya imágenes.
+- "El carrusel no cambia": confirmá que assets/portfolio/ tenga imágenes con extensiones soportadas.
+
+Ejemplos Reales en el Proyecto
+- Carpeta: assets/Eventos/Bautismo de Helena
+  - PIN sugerido en pinMap: "Bautismo de Helena": "0080"
+- Carpeta: assets/Eventos/3 Años de Enzo
+  - PIN sugerido en pinMap: "3 Años de Enzo": "1234"
+
+Notas
+- El sitio detecta automáticamente la base de eventos en assets/Eventos/ y otras candidatas si existen; se recomienda usar assets/Eventos/ para mantener orden.
+- El botón "Descargar todas" (events.html) usa ZIP en el navegador y puede tardar si las fotos son muy pesadas o muy numerosas.

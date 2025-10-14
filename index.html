@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fotos Nelson</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header" role="banner">
+      <h1 class="brand"><a class="brand-link" href="index.html#portfolio">Fotos Nelson</a></h1>
+      <nav class="tabs" aria-label="Secciones">
+        <a class="tab" href="#eventos" data-target="eventos" aria-selected="false">Eventos</a>
+        <a class="tab" href="#portfolio" data-target="portfolio" aria-selected="true">Portfolio</a>
+        <a class="tab" href="#contacto" data-target="contacto" aria-selected="false">Contacto</a>
+      </nav>
+    </header>
+
+    <main class="content" role="main">
+      <section id="eventos" class="section" aria-labelledby="eventos-title" hidden>
+        <h2 id="eventos-title">Eventos</h2>
+        <p>
+          Accedé a las galerías privadas de cada evento. Ingresá el PIN
+          que te hayamos entregado para ver y descargar tus fotos.
+        </p>
+        <div id="events-grid" class="events-grid" aria-live="polite"></div>
+
+        <!-- Modal PIN -->
+        <div id="pin-backdrop" class="modal-backdrop" hidden>
+          <div class="modal" role="dialog" aria-labelledby="pin-title" aria-modal="true">
+            <h3 id="pin-title">Ingresar PIN del evento</h3>
+            <p class="hint">Este PIN es único para cada carpeta.</p>
+            <input id="pin-input" class="input" type="password" inputmode="numeric" autocomplete="off" placeholder="Ej.: 5050" />
+            <div class="actions">
+              <button id="pin-cancel" class="btn" type="button">Cancelar</button>
+              <button id="pin-submit" class="btn primary" type="button">Acceder</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="portfolio" class="section" aria-labelledby="portfolio-title">
+        <h2 id="portfolio-title">Portfolio</h2>
+        <div class="carousel" aria-label="Carrusel de fotos">
+          <button class="control prev" aria-label="Foto anterior">&#10094;</button>
+          <div class="carousel-track" id="carousel-track"></div>
+          <button class="control next" aria-label="Foto siguiente">&#10095;</button>
+        </div>
+        <p class="hint">Usa las flechas o arrastra para navegar.</p>
+
+        <!-- Servicios con aparición al hacer scroll -->
+        <section class="services-section" aria-labelledby="services-title">
+          <h2 id="services-title">Servicios</h2>
+          <p class="hint">Además de fotografía, ofrecemos experiencias interactivas para tus eventos.</p>
+          <div class="services-rows">
+            <!-- 1: Imagen izquierda, descripción derecha -->
+            <article class="service-row reveal" aria-labelledby="svc-cabina-title">
+              <div class="service-media">
+                <img src="assets/portfolio/ENZ_0473.JPG" alt="Cabina de Fotos" loading="lazy" />
+              </div>
+              <div class="service-content">
+                <h3 id="svc-cabina-title">Cabina de Fotos</h3>
+                <p>
+                  La clásica cabina para que tus invitados posen y se lleven
+                  recuerdos impresos en el momento. Plantillas personalizadas y
+                  accesorios divertidos.
+                </p>
+              </div>
+            </article>
+
+            <!-- 2: Imagen derecha, descripción izquierda -->
+            <article class="service-row row--reverse reveal" aria-labelledby="svc-espejo-title">
+              <div class="service-media">
+                <img src="assets/portfolio/ENZ_0583.JPG" alt="Espejo Mágico" loading="lazy" />
+              </div>
+              <div class="service-content">
+                <h3 id="svc-espejo-title">Espejo Mágico</h3>
+                <p>
+                  Un espejo interactivo que guía a los invitados con animaciones
+                  y captura fotos con marcos digitales. Ideal para recepción y
+                  momentos destacados.
+                </p>
+              </div>
+            </article>
+
+            <!-- 3: Imagen izquierda, descripción derecha -->
+            <article class="service-row reveal" aria-labelledby="svc-360-title">
+              <div class="service-media">
+                <img src="assets/portfolio/ENZ_0541.JPG" alt="Plataforma 360°" loading="lazy" />
+              </div>
+              <div class="service-content">
+                <h3 id="svc-360-title">Plataforma 360°</h3>
+                <p>
+                  Vídeos 360° espectaculares con cámara giratoria. Compartí al
+                  instante en redes sociales y animá tu fiesta con clips únicos.
+                </p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </section>
+
+      <section id="contacto" class="section" aria-labelledby="contacto-title" hidden>
+        <h2 id="contacto-title">Contacto</h2>
+        <p>
+          ¿Querés reservar una sesión o pedir un presupuesto? Escribinos y
+          coordinamos tu idea.
+        </p>
+        <div class="contact-grid">
+          <div class="contact-card">
+            <h3>Email</h3>
+            <p><a href="mailto:fotos.nelson@gmail.com">fotos.nelson@gmail.com</a></p>
+          </div>
+          <div class="contact-card">
+            <h3>Teléfono</h3>
+            <p><a href="tel:+543644575503">3644-575503</a></p>
+            <p><a href="tel:+543644412899">3644-412899</a></p>
+          </div>
+          <div class="contact-card">
+            <h3>Instagram</h3>
+            <p><a href="https://instagram.com/fotosnelson_" target="_blank" rel="noopener">@fotosnelson_</a></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>© <span id="year"></span> Fotos Nelson</small>
+    </footer>
+
+    <script src="script.js?v=3"></script>
+  </body>
+</html>

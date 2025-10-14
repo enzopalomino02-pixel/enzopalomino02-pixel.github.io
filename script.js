@@ -75,6 +75,15 @@ let photos = [
 let current = 0;
 let photoEls = [];
 
+// Offset circular: coloca siempre fotos a ambos lados del actual
+function circularOffset(i, currentIndex, len) {
+  let offset = i - currentIndex;
+  const half = len / 2;
+  if (offset > half) offset -= len;
+  if (offset < -half) offset += len;
+  return offset;
+}
+
 function createCarousel() {
   track.innerHTML = '';
   photoEls = photos.map(src => {
@@ -90,8 +99,9 @@ function createCarousel() {
 
 function renderCarousel() {
   const baseShift = Math.min(140, Math.max(90, window.innerWidth * 0.12));
+  const len = photos.length;
   photoEls.forEach((el, i) => {
-    const offset = i - current;
+    const offset = circularOffset(i, current, len);
     const depth = Math.abs(offset);
     const dx = offset * baseShift;
     const scale = Math.max(0.7, 1 - depth * 0.08);
@@ -132,7 +142,7 @@ function onPointerMove(e) {
   const delta = x - dragStartX;
   // Desplazamiento visual ligero mientras se arrastra
   photoEls.forEach((el, i) => {
-    const offset = i - current;
+    const offset = circularOffset(i, current, photos.length);
     const dx = offset * Math.min(140, Math.max(90, window.innerWidth * 0.12)) + delta * 0.2;
     el.style.transform = el.style.transform.replace(/translate\(calc\(-50% .*?\),/, `translate(calc(-50% + ${dx}px),`);
   });

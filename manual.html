@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manual de Actualización y Publicación · Fotos Nelson</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+      :root { --accent:#0f766e; --ink:#111827; --muted:#6b7280; --bg:#ffffff; --card:#f8fafc; }
+      * { box-sizing: border-box; }
+      html, body { margin:0; padding:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.6; }
+      header.hero { padding: 48px 24px; background: linear-gradient(135deg, #0ea5e9 0%, #22c55e 60%, #0f766e 100%); color:#fff; }
+      .container { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+      .brand { font-family: 'Playfair Display', serif; font-size: 42px; margin: 0 0 6px; }
+      .subtitle { margin: 0; font-size: 18px; opacity: .92; }
+      .cover { margin-top: 18px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,.5); }
+      .cover img { width: 100%; display: block; }
+      h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin: 28px 0 10px; }
+      p { margin: 10px 0; }
+      .card { background: var(--card); border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin: 16px 0; }
+      code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: #eef2ff; border: 1px solid #dbeafe; padding: 2px 6px; border-radius: 6px; }
+      ul { padding-left: 20px; }
+      .toc { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+      .toc a { display: block; padding: 10px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; color: inherit; text-decoration: none; }
+      .toc a:hover { background: #e2e8f0; }
+      .hint { color: var(--muted); }
+      .steps { counter-reset: step; }
+      .steps li { list-style: none; position: relative; margin: 12px 0; padding-left: 44px; }
+      .steps li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 32px; height: 32px; display: inline-grid; place-items:center; border-radius: 50%; background: var(--accent); color:#fff; font-weight: 600; }
+      .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .kbd { background:#111827; color:#fff; }
+      .checklist li { margin: 8px 0; }
+      footer { margin: 40px 0; color: var(--muted); }
+      .section { page-break-inside: avoid; }
+      @media print {
+        header.hero { color:#111; background: none; border-bottom: 3px solid var(--accent); }
+        .toc { grid-template-columns: 1fr; }
+        .cover { border-color: #e5e7eb; }
+        a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 90%; color: #6b7280; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="container">
+        <h1 class="brand">Manual de Actualización y Publicación</h1>
+        <p class="subtitle">Sitio: <a style="color:#fff;text-decoration:underline" href="https://enzopalomino02-pixel.github.io/" target="_blank" rel="noopener">enzopalomino02-pixel.github.io</a></p>
+        <div class="cover"><img src="assets/cabina_fotos.jpg" alt="Portada" /></div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <h2>Índice</h2>
+        <div class="toc">
+          <a href="#estructura">Estructura del proyecto</a>
+          <a href="#nuevo-evento">Agregar un nuevo evento</a>
+          <a href="#imagenes-evento">Cargar imágenes del evento</a>
+          <a href="#portfolio">Actualizar Portfolio</a>
+          <a href="#pins">Configurar PIN por carpeta</a>
+          <a href="#publicar">Publicar cambios en GitHub Pages</a>
+          <a href="#verificacion">Verificación y chequeos rápidos</a>
+          <a href="#problemas">Problemas comunes y soluciones</a>
+        </div>
+      </section>
+
+      <section id="estructura" class="section">
+        <h2>Estructura del proyecto</h2>
+        <div class="card">
+<pre><code>assets/
+  Eventos/
+    Bautismo de Helena/
+      index.html     ← enlaces a imágenes (requerido para GitHub Pages)
+      ENZ_0001.JPG
+      ...
+    3 Años de Enzo/
+      index.html     ← enlaces a imágenes
+      IMG_0001.JPG
+  portfolio/
+    index.html       ← enlaces a imágenes del carrusel
+    ENZ_0473.JPG
+
+events.json          ← listado (opcional) de eventos con título/fecha
+script.js            ← lógica de Eventos y PIN por carpeta
+index.html           ← página principal (#eventos y #portfolio)
+</code></pre>
+          <p class="hint">Consejo: mantené los nombres exactos de carpetas (mayúsculas, espacios y acentos) para que coincidan con el <code>slug</code> del evento.</p>
+        </div>
+      </section>
+
+      <section id="nuevo-evento" class="section">
+        <h2>Agregar un nuevo evento</h2>
+        <ol class="steps">
+          <li>Creá una carpeta dentro de <code>assets/Eventos/</code> con el nombre que querés mostrar. Ej.: <code>assets/Eventos/Mi Fiesta Increíble/</code></li>
+          <li>(Opcional) Añadí el evento a <code>events.json</code> para título y fecha. Ej.:<br/>
+<pre><code>{
+  "slug": "Mi Fiesta Increíble",
+  "title": "Mi Fiesta Increíble",
+  "date": "2025-10-01",
+  "images": []
+}</code></pre>
+          </li>
+          <li>Creá un <code>index.html</code> dentro de esa carpeta con enlaces a todas las imágenes. Ejemplo mínimo:<br/>
+<pre><code>&lt;!doctype html&gt;
+&lt;html lang="es"&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Mi Fiesta Increíble&lt;/h1&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href="IMG_0001.JPG"&gt;IMG_0001.JPG&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href="IMG_0002.JPG"&gt;IMG_0002.JPG&lt;/a&gt;&lt;/li&gt;
+      &lt;!-- agregá todas las fotos --&gt;
+    &lt;/ul&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+          </li>
+          <li>Si querés portada, nombrá alguna imagen con <code>cover</code>, <code>portada</code>, <code>front</code> o <code>capa</code>. Si no, se usa la primera por orden alfabético.</li>
+        </ol>
+        <p class="hint">Por cómo funciona GitHub Pages, el sitio necesita un <code>index.html</code> que liste enlaces dentro de cada carpeta de evento para poder detectar y mostrar las imágenes.</p>
+      </section>
+
+      <section id="imagenes-evento" class="section">
+        <h2>Cargar imágenes del evento</h2>
+        <div class="card">
+          <ul>
+            <li>Formatos soportados: <code>.jpg</code>, <code>.jpeg</code>, <code>.png</code>, <code>.webp</code>, <code>.gif</code> (y mayúsculas).</li>
+            <li>Orden de aparición: por nombre de archivo (alfabético/numérico). Si querés controlar el orden, numerá archivos: <code>01.jpg</code>, <code>02.jpg</code>, ...</li>
+            <li>Tamaño recomendado: ≥ 1200×800 y &lt; 8–10 MB por foto para buen rendimiento.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="portfolio" class="section">
+        <h2>Actualizar el Portfolio</h2>
+        <div class="card">
+          <ol class="steps">
+            <li>Colocá o reemplazá fotos en <code>assets/portfolio/</code>.</li>
+            <li>Editá <code>assets/portfolio/index.html</code> para incluir enlaces a las imágenes que querés mostrar en el carrusel.</li>
+            <li>La sección Servicios usa imágenes específicas; podés cambiar sus <code>src</code> en <code>index.html</code>.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="pins" class="section">
+        <h2>Configurar PIN por carpeta</h2>
+        <div class="card">
+          <p>Para requerir PIN antes de entrar a una galería, editá <code>script.js</code> y agregá el nombre exacto de la carpeta al mapa <code>pinMap</code>:</p>
+<pre><code>const pinMap = {
+  "Bautismo de Helena": "0080",
+  "3 Años de Enzo": "1234",
+  "Mi Fiesta Increíble": "4321"
+};</code></pre>
+          <p class="hint">El <code>key</code> debe coincidir EXACTO con el nombre de la carpeta (incluyendo espacios y acentos).</p>
+        </div>
+      </section>
+
+      <section id="publicar" class="section">
+        <h2>Publicar cambios en GitHub Pages</h2>
+        <div class="card two-cols">
+          <div>
+            <h3>Con Git (PC)</h3>
+<pre><code>git add -A
+git commit -m "Actualiza eventos y portfolio"
+git push origin main</code></pre>
+            <p>Tras el push, esperá entre 30–120 segundos y luego visitá: <code>https://enzopalomino02-pixel.github.io/</code></p>
+          </div>
+          <div>
+            <h3>Desde la Web (rápido)</h3>
+            <ul>
+              <li>Entrá al repositorio y subí archivos desde “Add file” → “Upload files”.</li>
+              <li>Confirmá los cambios (Commit) en <code>main</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="verificacion" class="section">
+        <h2>Verificación y chequeos rápidos</h2>
+        <ul class="checklist">
+          <li>¿La carpeta nueva está dentro de <code>assets/Eventos/</code>?</li>
+          <li>¿Creaste <code>index.html</code> dentro de la carpeta con enlaces a las fotos?</li>
+          <li>¿El <code>slug</code> del evento coincide EXACTO con el nombre de la carpeta?</li>
+          <li>¿Agregaste el PIN en <code>script.js</code> si corresponde?</li>
+          <li>¿Hiciste <kbd class="kbd">Ctrl</kbd>+<kbd class="kbd">F5</kbd> para refrescar?</li>
+        </ul>
+      </section>
+
+      <section id="problemas" class="section">
+        <h2>Problemas comunes y soluciones</h2>
+        <div class="card">
+          <ul>
+            <li><strong>No aparece el evento</strong>: verificá que <code>assets/Eventos/index.html</code> tenga enlaces a todas las subcarpetas y que la carpeta del evento tenga su propio <code>index.html</code> enlazando imágenes.</li>
+            <li><strong>No se ven las fotos</strong>: asegurate que los enlaces del <code>index.html</code> del evento apunten a archivos con extensiones soportadas.</li>
+            <li><strong>Portada incorrecta</strong>: agregá una imagen que contenga <code>cover</code>/<code>portada</code>/<code>front</code>/<code>capa</code> en el nombre.</li>
+            <li><strong>Cambios no reflejados</strong>: hacé hard refresh (Ctrl+F5) y esperá 1–2 minutos tras el push.</li>
+          </ul>
+        </div>
+      </section>
+
+      <footer>
+        <p>© <span id="year"></span> Fotos Nelson · Manual v1.0</p>
+      </footer>
+    </main>
+
+    <script>
+      document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>

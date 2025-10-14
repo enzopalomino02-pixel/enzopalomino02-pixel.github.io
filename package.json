@@ -1,0 +1,23 @@
+{
+  "name": "trae-fotosnelson",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enzopalomino02-pixel/enzopalomino02-pixel.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/enzopalomino02-pixel/enzopalomino02-pixel.github.io/issues"
+  },
+  "homepage": "https://github.com/enzopalomino02-pixel/enzopalomino02-pixel.github.io#readme",
+  "dependencies": {
+    "puppeteer": "^24.24.1"
+  }
+}

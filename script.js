@@ -74,6 +74,8 @@ let photos = [
 
 let current = 0;
 let photoEls = [];
+let ghostLeftEls = [];
+let ghostRightEls = [];
 
 // Offset circular: coloca siempre fotos a ambos lados del actual
 function circularOffset(i, currentIndex, len) {
@@ -94,26 +96,58 @@ function createCarousel() {
     track.appendChild(img);
     return img;
   });
+  // Clones (fantasmas) a izquierda y derecha para efecto infinito
+  ghostLeftEls = photos.map(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = 'Foto del portfolio';
+    img.className = 'photo ghost-left';
+    track.appendChild(img);
+    return img;
+  });
+  ghostRightEls = photos.map(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = 'Foto del portfolio';
+    img.className = 'photo ghost-right';
+    track.appendChild(img);
+    return img;
+  });
   renderCarousel();
 }
 
-function renderCarousel() {
+function renderCarousel(deltaDrag = 0) {
   const baseShift = Math.min(140, Math.max(90, window.innerWidth * 0.12));
   const len = photos.length;
-  photoEls.forEach((el, i) => {
-    const offset = circularOffset(i, current, len);
-    const depth = Math.abs(offset);
-    const dx = offset * baseShift;
-    const scale = Math.max(0.7, 1 - depth * 0.08);
-    const dy = depth * 10;
-    const blur = depth > 0 ? Math.min(2.5, depth * 0.6) : 0;
-    const opacity = Math.max(0.35, 1 - depth * 0.12);
-    const z = 100 - depth;
+  const applyTo = (el, offset) => {
+    const depth = Math.abs(offset % len);
+    const dx = offset * baseShift + (deltaDrag * 0.2);
+    const scale = Math.max(0.7, 1 - Math.abs(offset) * 0.08);
+    const dy = Math.abs(offset) * 10;
+    const blur = Math.abs(offset) > 0 ? Math.min(2.5, Math.abs(offset) * 0.6) : 0;
+    const opacity = Math.max(0.35, 1 - Math.abs(offset) * 0.12);
+    const z = 100 - Math.abs(offset);
 
     el.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scale})`;
-    el.style.filter = `blur(${blur}px) saturate(${depth ? 0.9 : 1}) brightness(${depth ? 0.9 : 1})`;
+    el.style.filter = `blur(${blur}px) saturate(${Math.abs(offset) ? 0.9 : 1}) brightness(${Math.abs(offset) ? 0.9 : 1})`;
     el.style.opacity = String(opacity);
     el.style.zIndex = String(z);
+  };
+
+  // Principales (ring actual)
+  photoEls.forEach((el, i) => {
+    const offset = circularOffset(i, current, len);
+    applyTo(el, offset);
+  });
+  // Fantasmas izquierda (tile -1)
+  ghostLeftEls.forEach((el, i) => {
+    const offset = (i - current) - len;
+    applyTo(el, offset);
+  });
+  // Fantasmas derecha (tile +1)
+  ghostRightEls.forEach((el, i) => {
+    const offset = (i - current) + len;
+    applyTo(el, offset);
   });
 }
 
@@ -140,12 +174,8 @@ function onPointerMove(e) {
   if (!dragging || dragStartX == null) return;
   const x = e.clientX ?? e.touches?.[0]?.clientX;
   const delta = x - dragStartX;
-  // Desplazamiento visual ligero mientras se arrastra
-  photoEls.forEach((el, i) => {
-    const offset = circularOffset(i, current, photos.length);
-    const dx = offset * Math.min(140, Math.max(90, window.innerWidth * 0.12)) + delta * 0.2;
-    el.style.transform = el.style.transform.replace(/translate\(calc\(-50% .*?\),/, `translate(calc(-50% + ${dx}px),`);
-  });
+  // Desplazamiento visual ligero mientras se arrastra (aplicado a todas las capas)
+  renderCarousel(delta);
 }
 function onPointerUp(e) {
   if (!dragging || dragStartX == null) return;

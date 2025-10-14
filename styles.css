@@ -131,6 +131,7 @@ body {
               filter .35s ease,
               opacity .35s ease;
 }
+.photo.ghost-left, .photo.ghost-right { opacity: 0.35; }
 .photo::selection { background: transparent; }
 
 .control {
